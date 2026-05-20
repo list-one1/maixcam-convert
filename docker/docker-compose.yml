@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  convert:
+    build: .
+    image: yolo2cvimodel:latest
+    volumes:
+      - ../:/workspace
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-yolov8m_card}
+      - INPUT_SIZE=${INPUT_SIZE:-640}
+      - QUANTIZE=${QUANTIZE:-BF16}
+      - PROCESSOR=${PROCESSOR:-cv181x}
+    working_dir: /workspace

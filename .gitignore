@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Models (large files - use Git LFS or separate storage)
+*.pt
+last.pt
+
+# Workspace (generated output)
+workspace/*.mlir
+workspace/*_cali_table
+workspace/*.npz
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+/tmp/
+*.tmp
+
+# Docker Desktop installer (don't commit)
+*DockerDesktopInstaller*
