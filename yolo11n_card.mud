@@ -1,6 +1,6 @@
 [basic]
 type = cvimodel
-model = yolo11n_card_int8.cvimodel
+model = yolo11n_card_bf16.cvimodel
 
 [extra]
 model_type = yolov8
