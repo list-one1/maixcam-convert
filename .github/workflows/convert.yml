@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - "best.onnx"
-      - "convert_model.sh"
       - ".github/workflows/convert.yml"
   workflow_dispatch:
     inputs:
@@ -13,36 +12,43 @@ on:
         default: "yolo11n_card"
       quantize:
         description: "Quantization (BF16 or INT8)"
-        default: "INT8"
+        default: "BF16"
         options:
           - "BF16"
           - "INT8"
 
 jobs:
   convert:
-    runs-on: ubuntu-latest
-    container:
-      image: sophgo/tpuc_dev:latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
         with:
-          lfs: true
+          python-version: '3.10'
 
-      - name: Install tpu-mlir
+      - name: Install tpu_mlir
         run: |
-          pip install tpu_mlir --quiet || true
-          pip install onnx onnxruntime psutil --quiet || true
+          pip install --upgrade pip
+          pip install tpu_mlir onnx onnxruntime
+          echo "=== Verify tools ==="
+          which model_transform.py
+          which model_deploy.py
 
-      - name: Convert ONNX to MLIR
+      - name: Convert ONNX to cviModel
         run: |
           MODEL_NAME="${{ inputs.model_name || 'yolo11n_card' }}"
+          QUANTIZE="${{ inputs.quantize || 'BF16' }}"
           INPUT_SIZE=640
-
-          echo "=== Step 1: ONNX -> MLIR ==="
+          MODEL_SUFFIX=$(echo "$QUANTIZE" | tr '[:upper:]' '[:lower:]')
           mkdir -p workspace
 
+          echo "=== Model: ${MODEL_NAME}, Input: ${INPUT_SIZE}, Quantize: ${QUANTIZE} ==="
+
+          echo "=== Step 1: ONNX -> MLIR ==="
           model_transform.py \
             --model_name "${MODEL_NAME}" \
             --model_def best.onnx \
@@ -55,14 +61,7 @@ jobs:
             --tolerance 0.99,0.99 \
             --mlir "workspace/${MODEL_NAME}.mlir"
 
-      - name: Deploy to cvimodel
-        run: |
-          MODEL_NAME="${{ inputs.model_name || 'yolo11n_card' }}"
-          QUANTIZE="${{ inputs.quantize || 'INT8' }}"
-          MODEL_SUFFIX=$(echo "$QUANTIZE" | tr '[:upper:]' '[:lower:]')
-
-          echo "=== Step 2: MLIR -> cvimodel ($QUANTIZE) ==="
-
+          echo "=== Step 2: MLIR -> cvimodel (${QUANTIZE}) ==="
           model_deploy.py \
             --mlir "workspace/${MODEL_NAME}.mlir" \
             --quantize "${QUANTIZE}" \
@@ -71,7 +70,11 @@ jobs:
             --tolerance 0.99,0.99 \
             --model "workspace/${MODEL_NAME}_${MODEL_SUFFIX}.cvimodel"
 
-      - name: Upload cvimodel artifact
+          echo "=== Result ==="
+          ls -la workspace/
+          echo "cvimodel size: $(stat -c%s workspace/${MODEL_NAME}_${MODEL_SUFFIX}.cvimodel 2>/dev/null || echo 'N/A') bytes"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: maixcam-model
