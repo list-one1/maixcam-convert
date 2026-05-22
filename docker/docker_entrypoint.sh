@@ -4,9 +4,9 @@
 
 set -e
 
-MODEL_NAME="${MODEL_NAME:-yolov8m_card}"
+MODEL_NAME="${MODEL_NAME:-yolo11n_card}"
 INPUT_SIZE="${INPUT_SIZE:-640}"
-QUANTIZE="${QUANTIZE:-BF16}"
+QUANTIZE="${QUANTIZE:-INT8}"
 PROCESSOR="${PROCESSOR:-cv181x}"
 
 WORKSPACE=/workspace/workspace
@@ -40,7 +40,7 @@ model_transform.py \
     --scale "0.00392156862745098,0.00392156862745098,0.00392156862745098" \
     --pixel_format rgb \
     --channel_format nchw \
-    --output_names "/model.22/dfl/conv/Conv_output_0,/model.22/Sigmoid_output_0" \
+    --output_names "output0" \
     --tolerance 0.99,0.99 \
     --mlir "$WORKSPACE/${MODEL_NAME}.mlir"
 

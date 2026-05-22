@@ -109,8 +109,12 @@ labels = {labels}
 
 
 def get_output_names():
-    """Get YOLOv8 output node names (same for all YOLOv8 models)."""
-    return "/model.22/dfl/conv/Conv_output_0,/model.22/Sigmoid_output_0"
+    """Get YOLO output node names.
+
+    YOLOv8: dual output (/model.22/dfl/conv/Conv_output_0, /model.22/Sigmoid_output_0)
+    YOLOv11/12: single output (output0)
+    """
+    return "output0"
 
 
 def run_docker_convert(onnx_path, model_name, input_size, quantize="BF16",

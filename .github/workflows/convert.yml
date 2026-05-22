@@ -10,10 +10,10 @@ on:
     inputs:
       model_name:
         description: "Model name"
-        default: "yolov8m_card"
+        default: "yolo11n_card"
       quantize:
         description: "Quantization (BF16 or INT8)"
-        default: "BF16"
+        default: "INT8"
         options:
           - "BF16"
           - "INT8"
@@ -37,7 +37,7 @@ jobs:
 
       - name: Convert ONNX to MLIR
         run: |
-          MODEL_NAME="${{ inputs.model_name || 'yolov8m_card' }}"
+          MODEL_NAME="${{ inputs.model_name || 'yolo11n_card' }}"
           INPUT_SIZE=640
 
           echo "=== Step 1: ONNX -> MLIR ==="
@@ -51,14 +51,14 @@ jobs:
             --scale "0.00392156862745098,0.00392156862745098,0.00392156862745098" \
             --pixel_format rgb \
             --channel_format nchw \
-            --output_names "/model.22/dfl/conv/Conv_output_0,/model.22/Sigmoid_output_0" \
+            --output_names "output0" \
             --tolerance 0.99,0.99 \
             --mlir "workspace/${MODEL_NAME}.mlir"
 
       - name: Deploy to cvimodel
         run: |
-          MODEL_NAME="${{ inputs.model_name || 'yolov8m_card' }}"
-          QUANTIZE="${{ inputs.quantize || 'BF16' }}"
+          MODEL_NAME="${{ inputs.model_name || 'yolo11n_card' }}"
+          QUANTIZE="${{ inputs.quantize || 'INT8' }}"
           MODEL_SUFFIX=$(echo "$QUANTIZE" | tr '[:upper:]' '[:lower:]')
 
           echo "=== Step 2: MLIR -> cvimodel ($QUANTIZE) ==="

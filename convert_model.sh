@@ -7,8 +7,8 @@ set -e
 #   bash convert_model.sh [MODEL_NAME] [QUANTIZE]
 #
 # 示例:
-#   bash convert_model.sh yolov8m_card BF16
-#   bash convert_model.sh yolov8m_card INT8
+#   bash convert_model.sh yolo11n_card BF16
+#   bash convert_model.sh yolo11n_card INT8
 #
 # 运行环境:
 #   方案1: Sophgo Docker 容器内直接运行
@@ -17,12 +17,12 @@ set -e
 #
 #   方案2: 使用 docker-entrypoint
 #     docker run --rm -v "$(pwd)":/workspace \
-#       -e MODEL_NAME=yolov8m_card -e QUANTIZE=BF16 \
+#       -e MODEL_NAME=yolo11n_card -e QUANTIZE=BF16 \
 #       converter
 # ============================================================
 
-NET_NAME="${1:-yolov8m_card}"
-QUANTIZE="${2:-BF16}"
+NET_NAME="${1:-yolo11n_card}"
+QUANTIZE="${2:-INT8}"
 INPUT_W=640
 INPUT_H=640
 
@@ -61,7 +61,7 @@ model_transform.py \
     --scale "0.00392156862745098,0.00392156862745098,0.00392156862745098" \
     --pixel_format rgb \
     --channel_format nchw \
-    --output_names "/model.22/dfl/conv/Conv_output_0,/model.22/Sigmoid_output_0" \
+    --output_names "output0" \
     --tolerance 0.99,0.99 \
     --mlir "workspace/${NET_NAME}.mlir"
 
